@@ -49,12 +49,8 @@ app.get('/dash', isAuthenticated, function(req, res){
     res.render('dash.html', { username: req.user.user });
 });
 
-app.get('/mentions', isAuthenticated, function(req, res){
-    res.render('mentions.html', { username: req.user.user });
-});
-
-app.get('/structured', isAuthenticated, function(req, res){
-    res.render('structured.html', { username: req.user.user});
+app.get('/annotation', isAuthenticated, function(req, res){
+    res.render('annotation.html', { username: req.user.user });
 });
 
 app.get('/gettext', isAuthenticated, function(req, res){
@@ -119,14 +115,11 @@ app.get('/listincidents', isAuthenticated, function(req, res){
     if (!req.query['task'] || (req.query['task']!='men' && req.query['task']!='str')) {
         res.sendStatus(400);//("Not OK: incident id not specified");
     } else {
-        if (req.query['task']=='men')
-            var all_pattern = 'incstr:';
-        else
-            var all_pattern = 'incinitstr:';
+        var all_pattern = 'incstr:';
         client.keys(all_pattern + '*', function (err, all_incs) {
             var user = req.user.user;
             var task = req.query['task'];
-            var ann_pattern = task + ":" + user + ":";
+            var ann_pattern = 'prof:' + task + ":" + user + ":";
             client.keys(ann_pattern + '*', function (err, ann_incs) {
                 var all_i = all_incs.map(function(x) { return x.replace(all_pattern, '');});
                 var ann_i = new Set(ann_incs.map(function(x) { return x.split(':')[3];}));
