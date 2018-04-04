@@ -139,8 +139,12 @@ app.get('/listincidents', isAuthenticated, function(req, res){
 });
 
 var isAdmin = function (u){
-    return (['piek', 'roxane', 'filip', 'marten'].indexOf(u)>-1);
+    return (['piek', 'filip'].indexOf(u)>-1);
 }
+
+
+
+/*
 
 app.get('/exportannotations', isAuthenticated, function(req, res){
     if (req.query['annotator'] && req.query['task'] && req.query['ann'] && isAdmin(req.user.user)){
@@ -178,6 +182,8 @@ app.get('/getstrdata', isAuthenticated, function(req, res){
         res.send(jsonresult);
     });
 });
+
+
 
 
 // TODO: make sure it also works for structured data
@@ -235,6 +241,8 @@ app.post('/storeannotations', function(req, res) {
     }
 });
 
+*/
+
 // TODO: check if the incident is valid
 app.post('/storedisqualified', function(req, res) {
     if (req.body.task && req.body.incident){
@@ -249,19 +257,8 @@ app.post('/storedisqualified', function(req, res) {
     }
 });
 
-// TODO: check if the incident is valid
-app.post('/storereftexts', function(req, res) {
-    if (req.body.task && req.body.incident){
-        var task = req.body.task;
-        var user = req.user.user;
-        var rkey = task + ':' + user + ':txt:' + req.body.incident;
-        logAction(req.user.user, "UPDATE REFTEXTS, TASK=" + task);
-        client.set(rkey, JSON.stringify(req.body.documents || []));
-        res.sendStatus(200);
-    } else {
-        res.sendStatus(400);//("Not OK: incident id not specified");
-    }
-});
+
+/*
 
 app.post('/loadannotations', function(req, res){
     if (req.body.incident && req.body.task){
@@ -276,24 +273,13 @@ app.post('/loadannotations', function(req, res){
     }
 });
 
+*/
+
 app.post('/loaddisqualified', function(req, res){
     if (req.body.incident && req.body.task){
         var task = req.body.task;
         var user = req.user.user;
         var rkey = task + ':' + user + ':dis:' + req.body.incident;
-        client.get(rkey, function(err, data){
-            if (!err) res.send(JSON.parse(data));
-        });
-    } else {
-        res.sendStatus(400);//("Not OK: incident id not specified");
-    }
-});
-
-app.post('/loadreftexts', function(req, res){
-    if (req.body.incident && req.body.task){
-        var task = req.body.task;
-        var user = req.user.user;
-        var rkey = task + ':' + user + ':txt:' + req.body.incident;
         client.get(rkey, function(err, data){
             if (!err) res.send(JSON.parse(data));
         });
@@ -364,14 +350,6 @@ function isAuthenticated(req, res, next) {
 }
 
 
-/*
-/// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-*/
 
 app.listen(8986, function() {
 	console.log('started annotation tool nodejs backend');
