@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>Dashboard</title>
+<link href="/main.css" rel="stylesheet" type="text/css">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="centered">
+<div class="container">
+	<div class="login-container">
+            <div id="output" class="alert alert-success animated fadeInUp">Welcome back <%= username %> !</div>
+            <h2>Annotating Entity Profiles: <%= username %>'s Dashboard</h2>
+            <% if(["piek", "filip"].indexOf(username)>-1) { %>
+            <div id="admintools">
+            <h3>Administrator tools</h3>
+                <button class="btn btn-primary btn-ann" onclick="downloadMentionAnnotations('ngan')" target="_blank">Ngan's mention ann</button>
+                <button class="btn btn-primary btn-ann" onclick="downloadMentionAnnotations('areum')" target="_blank">Areum's mention ann</button><br/>
+                <a href="http://anntool.filten.lod.labs.vu.nl/logs/ngan.txt" target="_blank">Ngan's logs</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="http://anntool.filten.lod.labs.vu.nl/logs/areum.txt" target="_blank">Areum's logs</a>
+                <button class="btn btn-primary btn-ann" onclick="downloadStructuredAnnotations('ngan')" target="_blank">Ngan's structured ann</button>
+                <button class="btn btn-primary btn-ann" onclick="downloadStructuredAnnotations('areum')" target="_blank">Areum's structured ann</button>
+                <button class="btn btn-primary btn-ann" onclick="downloadStructuredDisq('ngan')" target="_blank">Ngan's disqualifications</button>
+                <button class="btn btn-primary btn-ann" onclick="downloadStructuredDisq('areum')" target="_blank">Areum's disqualification</button>
+            </div>
+            <% } %>
+            <div id="stats">
+            <h3>Your stats</h3>
+            <div class="row">
+                <h4>Mention annotation</h4>
+                <span>Annotated incidents: <b><span id="menincs"></span></b></span><br/>
+                <span>Annotated documents: <b><span id="mendocs"></span></b></span><br/>
+                <h4>Structured data annotation</h4>
+                <span>Annotated incidents: <b><span id="strincs"></span></b> out of N/a</span><br/>
+                <span>Annotated documents: <b><span id="strdocs"></span></b> out of N/a</span><br/>
+            </div>
+            </div>
+            <div class="row"> 
+                <img src="/img/lt_logo.png" style="width:35%"/>
+                <img src="/img/vu_logo.png" style="width:60%"/>
+            </div>
+            <button class="btn btn-primary btn-ann" onclick="location.href= '/annotation'">Annotation task</button>
+        <button class="btn btn-primary btn-ann" onclick="location.href='/logout'">Logout</button>
+        </div>
+</div>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="/main.js"></script>
+</body>
+</html>

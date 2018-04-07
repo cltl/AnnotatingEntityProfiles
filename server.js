@@ -167,6 +167,7 @@ app.get('/exportannotations', isAuthenticated, function(req, res){
     } else res.sendStatus(400);
 });
 
+*/
 app.get('/getstrdata', isAuthenticated, function(req, res){
     var inc = req.query['inc'];
     client.get('incstr:' + inc, function(err, result){
@@ -176,7 +177,7 @@ app.get('/getstrdata', isAuthenticated, function(req, res){
     });
 });
 
-
+/*
 
 
 // TODO: make sure it also works for structured data
