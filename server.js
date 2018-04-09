@@ -211,6 +211,8 @@ app.get('/userstats', isAuthenticated, function(req, res){
     }
 });
 
+*/
+
 // TODO: check if the incident is valid
 app.post('/storeannotations', function(req, res) {
     console.log("Storing request received from " + req.user.user);
@@ -218,7 +220,7 @@ app.post('/storeannotations', function(req, res) {
         var task = req.body.task;
         var user = req.user.user;
 	var annotations = req.body.annotations || {};
-        var rkey = task + ':' + user + ':ann:' + req.body.incident;
+        var rkey = 'prof:' + task + ':' + user + ':' + req.body.incident;
         client.set(rkey, JSON.stringify(annotations), function(err){
 	    if (!err){
                 logAction(req.user.user, "UPDATE ANNOTATIONS, TASK=" + task);
@@ -235,8 +237,6 @@ app.post('/storeannotations', function(req, res) {
     }
 });
 
-*/
-
 // TODO: check if the incident is valid
 app.post('/storedisqualified', function(req, res) {
     if (req.body.task && req.body.incident){
@@ -252,13 +252,11 @@ app.post('/storedisqualified', function(req, res) {
 });
 
 
-/*
-
 app.post('/loadannotations', function(req, res){
     if (req.body.incident && req.body.task){
         var task = req.body.task;
         var user = req.user.user;
-        var rkey = task + ':' + user + ':ann:' + req.body.incident;
+        var rkey = 'prof:' + task + ':' + user + ':' + req.body.incident;
         client.get(rkey, function(err, data){ 
             if (!err) res.send(JSON.parse(data));
         });
@@ -267,7 +265,7 @@ app.post('/loadannotations', function(req, res){
     }
 });
 
-*/
+
 
 app.post('/loaddisqualified', function(req, res){
     if (req.body.incident && req.body.task){

@@ -1,2 +1,6 @@
+allowed.json
 node_modules/
 server_logs/
+client/logs
+client/img
+test_data*/

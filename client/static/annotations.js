@@ -3,26 +3,32 @@ $(function(){
 
     disqualification = [];
     refDocs = [];
-    $(".ann-input").hide();
-    $("#strtable").bootstrapTable({});
-    /*
-$('#strtable tbody').on( 'click', 'td', function () {
-        var atable = $('#strtable').DataTable();
-        console.log(this.field);
-        if ($(this).hasClass('selected')){
-            $('td').removeClass('selected');
-            $('#selpart').html('NONE');
-            $('#selprop').html('NONE');
-        } else {
-            $('td').removeClass('selected');
-            $(this).addClass('selected');
-            var acolumn = atable.column(this).index() + 1;
-            var arow = atable.row(this).index() + 1;
-            $('#selpart').html(arow);
-            $('#selprop').html(acolumn);
+    $(".ann-input-m").hide();
+    $(".ann-input-s").hide();
+    $("#strtable").bootstrapTable({
+        "searching": false,
+        "paging": false
+    });
+    $('#strtable tbody').on( 'click', 'td', function () {
+        //var atable = $('#strtable').DataTable();
+        //console.log(this.field);
+        var prop_and_part = this.id.slice(3).split('_');
+        var acolumn = prop_and_part[0];
+        var arow = prop_and_part[1];
+        if (acolumn!='Identifier'){ // The identifier column can't be selected
+            if ($(this).hasClass('selected')){
+                $('td').removeClass('selected');
+                $('#selpart').html('NONE');
+                $('#selprop').html('NONE');
+            } else {
+                $('td').removeClass('selected');
+                $(this).addClass('selected');
+                $('#selpart').html(arow);
+                $('#selprop').html(acolumn);
+            }
         }
 	} );
-    */
+    
 
         $(".selectpicker").on('change', function(){
             console.log('changed');
@@ -70,7 +76,7 @@ var clearSelection = function(){
 }
 
 var getExistingAnnotations = function(fn, task, cb){
-/*    $.post('/loadannotations', {'task': task, 'incident': fn}, function(data, status){
+    $.post('/loadannotations', {'task': task, 'incident': fn}, function(data, status){
          if (!data) {console.log('There are no previous annotations of mentions done by this user for this incident.'); annotations={};}//"s": [], "b": [], "i": [], "h": [], "d": []};}
          else {
             console.log("Loaded previous annotations of mentions!"); // + data.length.toString() + " annotations for this incident by this user.");
@@ -78,8 +84,6 @@ var getExistingAnnotations = function(fn, task, cb){
         } 
        cb(data);
     });
-*/
-    annotations={};
 }
 
 var create_datepicker = function(granularity, format, manualId=""){
@@ -95,7 +99,7 @@ var create_datepicker = function(granularity, format, manualId=""){
 
 var getExistingDisqualified = function(fn, task, cb){
     $.post('/loaddisqualified', {'task': task, 'incident': fn}, function(data, status){
-         if (!data) {console.log('There are no previous disqualifications done by this user for this incident.'); disqualification=[];}//"s": [], "b": [], "i": [], "h": [], "d": []};}
+         if (!data) {console.log('There are no previous disqualifications done by this user for this incident.'); disqualification=[];}
          else {
             console.log("Loaded previous disqualifications!"); // + data.length.toString() + " annotations for this incident by this user.");
             disqualification=data;
@@ -105,8 +109,11 @@ var getExistingDisqualified = function(fn, task, cb){
 }
 
 var defaultValues = function(){
-        $("tr").removeClass("selected");
+        $("td").removeClass("selected");
         $("#strtable").show();
+        $("#selprop").html('NONE');
+        $('#selpart').html('NONE');
+        $('#comment').val('');
 }
 
 var getCardinalityAndParticipants = function(){
@@ -127,12 +134,11 @@ var getCardinalityAndParticipants = function(){
 
 var reloadInside=function(mwu=false){
     if($("span.active").length>0){
-        var cp = getCardinalityAndParticipants();
-        var cardinality=cp[0];
-        var allParticipants=cp[1];
+        var allParticipants=$('#selpart').text();
+        var property=$('#selprop').text();
   
-        $("span.active").append("<sub>" + (allParticipants || 'NONE') + '</sub><sup>' + cardinality + "</sup>");
-        var newClass = 'event_' + $("#eventtype").val();
+        $("span.active").append("<sub>" + allParticipants + '</sub><sup>' + property.slice(0,4) + "</sup>");
+        var newClass = 'prop_' + property;
         if (!mwu){
             $("span.active").removeClass().addClass(newClass).addClass("unclickable");
         } else {
@@ -153,7 +159,7 @@ var storeAndReload = function(annotations, mwu = false){
         alert( "Annotation saved. Now re-loading." );
         reloadInside(mwu);
         defaultValues();
-        showTrails();
+        //showTrails();
     })
     .fail(function() {
         alert( "There was an error with storing these annotations" );
@@ -174,11 +180,7 @@ var storeDisqAndReload = function(task){
 var removeAnnotations = function(){
     if ($("span.inactive").length>0){
     var allMentions = $(".inactive").map(function() {
-        if ($(this).hasClass('lexsupport')){
-            $(this).removeClass('lexsupport');
-        }else{
             return $(this).attr('id');
-        }
     }).get();
     for (var i=0; i<allMentions.length; i++){
         var k = allMentions[i];
@@ -223,10 +225,15 @@ var printInfo = function(msg){
         $("#infoMessage").addClass("bad_info");
 }
 
-var saveEvent = function(mwu){
-    if ($("#eventtype").val()=='-1'){
-        printInfo("Please pick an event type");
-    } else {
+var saveEvidence = function(mwu){
+    var property = $("#selprop").text();
+    var allParticipants=$("#selpart").text();
+    var choiceId = '#' + property + '_' + allParticipants;
+    if (property=='NONE' || allParticipants=='NONE')
+        printInfo("Please mark at least one cell in the table to pick a property and a participant");
+    else if ($(choiceId).val()=='-1')
+        printInfo("Annotation of mentions requires the property value to be set first in the table.");
+    else {
         var allMentions = $(".active").map(function() {
             return $(this).attr('id');
         }).get();
@@ -235,16 +242,13 @@ var saveEvent = function(mwu){
                 printInfo("All words of a multiword unit must be in the same sentence");
             } else {
             $("#infoMessage").html("");
-            var cp = getCardinalityAndParticipants();
-            var cardinality=cp[0];
-            var allParticipants=cp[1];
+            var comment = $("#comment").val();
 
-            var event_type = $("#eventtype").val();
             //if (!annotations[event_type]) annotations[event_type]=[];
             //annotations[event_type].push(all);
             for (var i=0; i<allMentions.length; i++){
                 var mention=allMentions[i];
-                annotations[mention]={'cardinality': cardinality, 'eventtype': event_type, 'participants': allParticipants};
+                annotations[mention]={'property': property, 'participants': allParticipants, 'comment': comment};
                 if (mwu){
                     annotations[mention]["mwu"] = allMentions;
                 }
@@ -261,20 +265,11 @@ var addToken = function(token, tid, annotated) {
     if (token=='NEWLINE') return '<br/>';
     else {
 	if (!annotated[tid]){
-        if (words_lex.indexOf(token)!=-1){
-            return "<span id=" + tid + " class=\"unclickable lexsupport\">" + token + "</span> ";
-        } else {
-            for (var i in patterns_lex){
-                if (token.startsWith(patterns_lex[i])){
-                    return "<span id=" + tid + " class=\"unclickable lexsupport\">" + token + "</span> ";
-                }
-            }
-	        return "<span id=" + tid + " class=\"clickable\">" + token + "</span> ";
-        }
+        return "<span id=" + tid + " class=\"clickable\">" + token + "</span> ";
 	} else {
             var mwuClass="";
             if (annotated[tid]["mwu"]) mwuClass="mwu";
-	    return "<span id=" + tid + " class=\"event_" + annotated[tid]['eventtype'] + " unclickable " + mwuClass + "\">" + token + "<sub>" + (annotated[tid]['participants'] || 'NONE') + '</sub><sup>' + annotated[tid]['cardinality'] + "</sup></span> ";
+	    return "<span id=" + tid + " class=\"prop_" + annotated[tid]['property'] + " unclickable " + mwuClass + "\">" + token + "<sub>" + (annotated[tid]['participants']) + '</sub><sup>' + annotated[tid]['property'].slice(0,4) + "</sup></span> ";
 	}
     }
     
@@ -295,6 +290,8 @@ var loadTextsFromFile = function(fn){
     $.get("/gettext", {'inc': fn}, function(data, status) {
         getExistingAnnotations(fn, task, function(annotated){
         getExistingDisqualified(fn, task, function(disqualified){
+        console.log(annotated);
+        console.log(disqualified);
         var all_html = ""; 
         var c=0;
         for (var k in data) {
@@ -336,17 +333,21 @@ var loadTextsFromFile = function(fn){
     });
 }
 
-var tableColumns = ["Identifier", "Name", "Status", "Type", "Gender", "Age", "Age Group", "Kinship", "Ethnic Group"];
+var tableColumns = ["Identifier", "Name", "Status", "Type", "Gender", "Age", "Age Group", "Kinship", "Ethnicity"];
 var propertyOptions = {
                         "Kinship": ["father", "mother", "child", "grandmother", "grandfather"],
-                        "Ethnic Group": ["Asian", "Black", "Native American", "White"]
+                        "Ethnicity": ["Asian", "Black", "Native American", "White"]
                     }
+var tableAnnotations = {};
 
 var saveTableAnnotation = function(selectObject){
-    alert('hello ' + selectObject.id + selectObject.value);    
+    var changedId = selectObject.id;
+    var newValue = selectObject.value;
+    tableAnnotations[changedId] = newValue;
+    saveStructuredAnnotation();
 }
 
-var getStructuredData = function(inc) {
+var getStructuredData = function(inc, cback) {
     $.get('/getstrdata', {'inc': inc}, function(data, status) {
         data=JSON.parse(data);
         var participants = data['participants'];
@@ -356,34 +357,27 @@ var getStructuredData = function(inc) {
             tableHtml += "<tr data-index=" + cp.toString() + ">";
             for (var cc=1; cc<=tableColumns.length; cc+=1){
                 var thisProperty = tableColumns[cc-1];
+                var thisId=thisProperty + "_" + cp.toString();
                 if(propertyOptions.hasOwnProperty(thisProperty)){
-                    tableHtml += "<td><select class=\"selectpicker\" onchange=\"saveTableAnnotation(this)\" id=\"" + thisProperty + "_" + cp.toString() + "\">";
+                    tableHtml += "<td id=\"td_" + thisId + "\"><select class=\"selectpicker\" onchange=\"saveTableAnnotation(this)\" id=\"" + thisId + "\">";
                     tableHtml += "<option value=\"-1\">--CHOOSE--</option>";
                     for (var opt=0; opt<propertyOptions[thisProperty].length; opt++){
                         tableHtml += "<option value=\"" + propertyOptions[thisProperty][opt] + "\">" + propertyOptions[thisProperty][opt] + "</option>";
                     }
                     tableHtml += "</select></td>";
                 } else{
-                    tableHtml += "<td>" + (participants[cp-1][tableColumns[cc-1]] || "") + "</td>";
+                    tableHtml += "<td id=\"td_" + thisId + "\">" + (participants[cp-1][tableColumns[cc-1]] || "") + "</td>";
                 }
             }
             tableHtml += "</tr>";
         }
 
-        var str_html = "<label id=\"strloc\">Location: " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "</label><br/><label id=\"strtime\">Date: " + data['date'] + "</label><br/><label>Killed: " + data['num_killed'] + "</label>, <label>Injured:" + data['num_injured'] + "</label><br/>";
-        //console.log(data['participants']);
-        //$('#strtable').bootstrapTable("load", data['participants']);
-        //$('#strtable td').editable({
-        //    type: 'text'
-        //});
-        //var someHtml = '<tr data-index="0"><td style="">1</td><td style="">John Smith</td><td style="">Killed</td><td style="">Victim</td><td style=""> Male</td><td style="">17</td><td style=""><select id="agegroup1"><option value="kid">Kid</option><option value="Adult">Adult</option></select></td><td>Father</td><td>Asian</td></tr>';
+        var str_html = "<h4>A) INFO</h4><label id=\"strloc\">Location: " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "</label><br/><label id=\"strtime\">Date: " + data['date'] + "</label><br/><label>Killed: " + data['num_killed'] + "</label>, <label>Injured:" + data['num_injured'] + "</label><br/>";
         $('#strtable tbody').html(tableHtml);
-        //$("#agegroup1").val('Adult');
         $("#strinfo").html(str_html);
-        var theHeight = $("#strinfo").height()*data['participants'].length*0.6+40;
- $('.fixed-table-container').height(theHeight);
- $('.fixed-table-body').height(theHeight);
-
+        $(".fixed-table-body").height($("#strtable").height())
+        $(".fixed-table-container").height($("#strtable").height())
+        cback();
     });
 }
 
@@ -497,19 +491,26 @@ var showTrails = function(){
 // Load incident - both for mention and structured annotation
 var loadIncident = function(task){
     var inc = $("#pickfile").val();
-if (inc!="-1"){
+    if (inc!="-1"){
         $("#incid").html(inc);
         //$("#annotation").show();
         $("#infoMessage").html("");
-        $(".ann-input").show();
-        if (task=='men'){
-            getStructuredData(inc);
-            loadTextsFromFile(inc);
-            $("#pnlRight").show();
-        } else { //structured data annotation
-            getAllInfo(inc);
-            $("#newDoc").show();
-        }
+        $(".ann-input-m").show();
+        $(".ann-input-s").show();
+        getStructuredData(inc, function(){
+            $.post('/loadannotations', {'task': 'str', 'incident': inc}, function(data, status){
+                if (!data) {console.log('There are no previous structured annotations done by this user for this incident.'); tableAnnotations={};}
+                else {
+                    console.log("Loaded previous structured annotations!");
+                    tableAnnotations=data;
+                    Object.keys(tableAnnotations).forEach(function(key) {
+                        $('#' + key).val(tableAnnotations[key]);
+                    })
+                }
+            });
+        });
+        loadTextsFromFile(inc);
+        $("#pnlRight").show();
         //$("#bigdiv").height("350px");
 
    } else{
@@ -522,13 +523,8 @@ var getAnnotatedDate=function(){
 }
 
 var saveStructuredAnnotation = function(){
-    var str_ann = {"time": getAnnotatedDate(), "location": $("#location").val(), "participants": $("#participants").val(), "numparticipants": $("#numparticipants").val()};
-    $.post("/storeannotations", {'annotations': str_ann, 'task': 'str', 'incident': $("#pickfile").val()}, function(data, status){
-        alert("Annotation saved. Now re-loading");
-        location.reload();
-//        $(".ann-input").hide();
-//        $("#pickfile").val("-1");
-//        $("#pnlLeft").html("");
+    $.post("/storeannotations", {'annotations': tableAnnotations, 'task': 'str', 'incident': $("#pickfile").val()}, function(data, status){
+        alert("Annotation saved!");
     });
 }
 

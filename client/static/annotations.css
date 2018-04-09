@@ -33,15 +33,19 @@ div.disqualified * {
 }
 
 .selected{
-    background: #0f0;
+    background: #f2dede;
 }
 
-.ann-input{
+.ann-input-s{
     background: #dfe;
+}
+
+.ann-input-m{
+    background: #edeef0;
 }
 
 #bigdiv {
-    background: #dfe;
+    background: #edeef0;
 }
 
 .table-condensed{
@@ -64,35 +68,35 @@ label.inactive {
     background: #f00;
 }
 
-.event_s {
+.prop_Name {
     background: #0ff;
 }
 
-.event_b {
+.prop_Status {
     background: #F4A460;
 }
 
-.event_h {
+.prop_Type {
     background: #f0f;
 }
 
-.event_i {
+.prop_Gender {
     background: #f99;
 }
 
-.event_d {
+.prop_Age {
     background: #ffffb3;
 }
 
-.event_m {
+.prop_AgeGroup {
     background: #77f;
 }
 
-.event_o {
+.prop_Kinship {
     background: #F5DEB3;
 }
 
-.event_g {
+.prop_Ethnicity {
     background: #808000;
 }
 
@@ -110,4 +114,8 @@ label.inactive {
 }
 .mwu {
     font-weight: bold;
+}
+
+#strinfo {
+    background-color: #f6eedd;
 }

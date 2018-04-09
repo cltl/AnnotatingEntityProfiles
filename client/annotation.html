@@ -33,21 +33,23 @@
 </div>
 <div class="row"></div>
 <div class="row" id="annrow">
-    <div class="col-sm-3 ann-input">
-    <div id="annotation">
-    <div id="strinfo"></div>
-    <label>Selected Participant: </label>
-    <span id="selpart">NONE</span> <br/>
-    <label>Selected Property: </label>
-    <span id="selprop">NONE</span> <br/>
-    <label>Comment:</label>
-    <textarea class="form-control" rows="5" id="comment"></textarea>
+    <div class="col-sm-1"id="strinfo"></div>
+    <div id="annotation" class="col-sm-2 ann-input-m">
+        <h4>B) MENTION ANNOTATION</h4>
+        <label>Selected Participant: </label>
+        <span id="selpart">NONE</span> <br/>
+        <label>Selected Property: </label>
+        <span id="selprop">NONE</span> <br/>
+        <label>Comment:</label>
+        <input type="text" class="form-control" id="comment">
+        <button class="btn btn-success btn-ann" onclick="saveEvidence(0)">Submit selected mentions</button>
+        <button class="btn btn-info btn-ann" onclick="saveEvidence(1)">Submit as a multiword unit</button>
+        <button class="btn btn-danger btn-rmv" onclick="removeAnnotations()">Remove selected mentions</button>
     </div>
-        <button class="btn btn-success btn-ann" onclick="saveEvent(0)">Submit property mention</button>
-        <button class="btn btn-danger btn-rmv" onclick="removeAnnotations()">Clear text selection</button>
-    </div>
-    <div class="col-sm-9 ann-input"> 
-    <table id="strtable" class="table-condensed"><thead><th data-field="Identifier">ID</th><th data-field="Name">Name</th><th data-field="Status">Status</th><th data-field="Type">Type</th><th data-field="Gender">Gender</th><th data-field="Age">Age</th><th data-field="Age Group">Age Group</th><th data-field="Kinship">Kinship</th><th data-field="Ethnic Group">Ethnic Group</th></thead><tbody></tbody></table>
+    <div class="col-sm-9 ann-input-s">
+    <h4>C) STRUCTURED DATA ANNOTATION</h4>
+    <table id="strtable" class="table-condensed"><thead><th data-field="Identifier">ID</th><th data-field="Name">Name</th><th data-field="Status">Status</th><th data-field="Type">Type</th><th data-field="Gender">Gender</th><th data-field="Age">Age</th><th data-field="AgeGroup">AgeGroup</th><th data-field="Kinship">Kinship</th><th data-field="Ethnicity">Ethnicity</th></thead><tbody></tbody></table>
+        <label>Legend: </label>&nbsp;<label class="prop_Name">Name</label>&nbsp;<label class="prop_Status">Status</label>&nbsp;<label class="prop_Type">Type</label>&nbsp;<label class="prop_Gender">Gender</label>&nbsp;<label class="prop_Age">Age</label>&nbsp;<label class="prop_AgeGroup">AgeGroup</label>&nbsp;<label class="prop_Kinship">Kinship</label>&nbsp;<label class="prop_Ethnicity">Ethnicity</label>&nbsp;<br/><label>Selection legend:</label>&nbsp;<label class="active">selected to be added</label>&nbsp;<label class="inactive">selected to be removed</label>
     </div>
 </div>
 <div class="row" id="bigdiv">
@@ -55,7 +57,6 @@
 </div>
 </div>
 <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
