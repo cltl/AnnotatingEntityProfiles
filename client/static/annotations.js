@@ -9,25 +9,34 @@ $(function(){
         "searching": false,
         "paging": false
     });
-    $('#strtable tbody').on( 'click', 'td', function () {
-        //var atable = $('#strtable').DataTable();
-        //console.log(this.field);
-        var prop_and_part = this.id.slice(3).split('_');
-        var acolumn = prop_and_part[0];
-        var arow = prop_and_part[1];
-        if (acolumn!='Identifier'){ // The identifier column can't be selected
-            if ($(this).hasClass('selected')){
-                $('td').removeClass('selected');
-                $('#selpart').html('NONE');
-                $('#selprop').html('NONE');
-            } else {
-                $('td').removeClass('selected');
-                $(this).addClass('selected');
-                $('#selpart').html(arow);
-                $('#selprop').html(acolumn);
+    $('#strtable tbody').on( 'click', 'td', function (e) {
+        if (e.target == e.currentTarget){
+            var prop_and_part = this.id.slice(3).split('_');
+            var acolumn = prop_and_part[0];
+            var arow = prop_and_part[1];
+            if (acolumn!='Identifier'){ // The identifier column can't be selected
+                if ($(this).hasClass('selected')){ // remove selection
+                    $(this).removeClass('selected');
+                    setOfSelected.delete(arow);
+                    if (setOfSelected.size==0){
+                        $('#selpart').html('NONE');
+                        $('#selprop').html('NONE');
+                    } else {
+                        $("#selpart").html(Array.from(setOfSelected).join(','));
+                    }
+                } else { // adding a selection
+                    if ($("#selprop").text()!='NONE' && acolumn!=$("#selprop").text()){
+                        $('td').removeClass('selected');
+                        setOfSelected.clear();
+                    }
+                    $(this).addClass('selected');
+                    setOfSelected.add(arow);
+                    $('#selpart').html(Array.from(setOfSelected).join(','));
+                    $('#selprop').html(acolumn);
+                }
             }
         }
-	} );
+	});
     
 
         $(".selectpicker").on('change', function(){
@@ -114,6 +123,7 @@ var defaultValues = function(){
         $("#selprop").html('NONE');
         $('#selpart').html('NONE');
         $('#comment').val('');
+        setOfSelected = new Set();
 }
 
 var getCardinalityAndParticipants = function(){
@@ -134,7 +144,7 @@ var getCardinalityAndParticipants = function(){
 
 var reloadInside=function(mwu=false){
     if($("span.active").length>0){
-        var allParticipants=$('#selpart').text();
+        var allParticipants=Array.from(setOfSelected).join('');
         var property=$('#selprop').text();
   
         $("span.active").append("<sub>" + allParticipants + '</sub><sup>' + property.slice(0,4) + "</sup>");
@@ -227,36 +237,43 @@ var printInfo = function(msg){
 
 var saveEvidence = function(mwu){
     var property = $("#selprop").text();
-    var allParticipants=$("#selpart").text();
-    var choiceId = '#' + property + '_' + allParticipants;
-    if (property=='NONE' || allParticipants=='NONE')
+    if (property=='NONE' || setOfSelected.size==0)
         printInfo("Please mark at least one cell in the table to pick a property and a participant");
-    else if ($(choiceId).val()=='-1')
-        printInfo("Annotation of mentions requires the property value to be set first in the table.");
     else {
-        var allMentions = $(".active").map(function() {
-            return $(this).attr('id');
-        }).get();
-        if (allMentions.length>0){
-            if (mwu && !sameSentence(allMentions)) {
-                printInfo("All words of a multiword unit must be in the same sentence");
-            } else {
-            $("#infoMessage").html("");
-            var comment = $("#comment").val();
+        var allInTable=true;
+        console.log(setOfSelected);
+        setOfSelected.forEach(function(participant){
+            console.log(participant);
+            var choiceId = '#' + property + '_' + participant;
+            if ($(choiceId).val()=='-1'){
+                printInfo("Annotation of mentions requires the property value to be set first in the table.");
+                allInTable=false;
+            }
+        });
+        if (allInTable){
+            var allMentions = $(".active").map(function() {
+                return $(this).attr('id');
+            }).get();
+            if (allMentions.length>0){
+                if (mwu && !sameSentence(allMentions)) {
+                    printInfo("All words of a multiword unit must be in the same sentence");
+                } else {
+                $("#infoMessage").html("");
+                var comment = $("#comment").val();
 
-            //if (!annotations[event_type]) annotations[event_type]=[];
-            //annotations[event_type].push(all);
-            for (var i=0; i<allMentions.length; i++){
-                var mention=allMentions[i];
-                annotations[mention]={'property': property, 'participants': allParticipants, 'comment': comment};
-                if (mwu){
-                    annotations[mention]["mwu"] = allMentions;
+                for (var i=0; i<allMentions.length; i++){
+                    var mention=allMentions[i];
+                    console.log(setOfSelected);
+                    annotations[mention]={'property': property, 'participants': Array.from(setOfSelected).sort(), 'comment': comment};
+                    if (mwu){
+                        annotations[mention]["mwu"] = allMentions;
+                    }
                 }
+                storeAndReload(annotations, mwu);
+                }
+            } else {
+                printInfo("Please select at least one mention");
             }
-            storeAndReload(annotations, mwu);
-            }
-        } else {
-            printInfo("Please select at least one mention");
         }
     }
 }
@@ -269,7 +286,7 @@ var addToken = function(token, tid, annotated) {
 	} else {
             var mwuClass="";
             if (annotated[tid]["mwu"]) mwuClass="mwu";
-	    return "<span id=" + tid + " class=\"prop_" + annotated[tid]['property'] + " unclickable " + mwuClass + "\">" + token + "<sub>" + (annotated[tid]['participants']) + '</sub><sup>' + annotated[tid]['property'].slice(0,4) + "</sup></span> ";
+	    return "<span id=" + tid + " class=\"prop_" + annotated[tid]['property'] + " unclickable " + mwuClass + "\">" + token + "<sub>" + annotated[tid]['participants'].join('') + '</sub><sup>' + annotated[tid]['property'].slice(0,4) + "</sup></span> ";
 	}
     }
     
@@ -312,13 +329,13 @@ var loadTextsFromFile = function(fn){
             else var disq = true;
             if (disq) var header = "<div class=\"panel panel-default disqualified\" id=\"" + k + "\">";
             else var header = "<div class=\"panel panel-default\" id=\"" + k + "\">";
-            header += "<div class=\"panel-heading\"><h4 class=\"panel-title\">" + title + "&nbsp;(<i>Published on: <span id=" + k + "dct>" + data[k]['DCT'] + "</span></i>) "; 
+            header += "<div class=\"panel-heading\"><h5 class=\"panel-title\">" + title + "&nbsp;(<i>Published on: <span id=" + k + "dct>" + data[k]['DCT'] + "</span></i>) "; 
             if (!disq) header += "<button class=\"btn btn-primary\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(\'" + k + "\', \'" + task + "\')\">Mark non-relevant</button>";
             else header += "<button class=\"btn btn-primary\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(\'" + k + "\', \'" + task + "\')\">Mark relevant</button>";
 
 //            if (!disq) header += "<button class=\"btn btn-primary quabtn\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(" + k + ")\">Disqualify this document</button>";
 //            else header += "<button class=\"btn btn-primary disbtn\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(" + k + ")\">Qualify this document</button>";
-            header += "</h4></div>";
+            header += "</h5></div>";
             body += "</div></div>";
             all_html += header + body;
         }
@@ -333,7 +350,7 @@ var loadTextsFromFile = function(fn){
     });
 }
 
-var tableColumns = ["Identifier", "Name", "Status", "Type", "Gender", "Age", "Age Group", "Kinship", "Ethnicity"];
+var tableColumns = ["Identifier", "Name", "Status", "Type", "Gender", "Age", "AgeGroup", "Kinship", "Ethnicity"];
 var propertyOptions = {
                         "Kinship": ["father", "mother", "child", "grandmother", "grandfather"],
                         "Ethnicity": ["Asian", "Black", "Native American", "White"]
@@ -366,13 +383,17 @@ var getStructuredData = function(inc, cback) {
                     }
                     tableHtml += "</select></td>";
                 } else{
-                    tableHtml += "<td id=\"td_" + thisId + "\">" + (participants[cp-1][tableColumns[cc-1]] || "") + "</td>";
+                    if (tableColumns[cc-1]=="AgeGroup")
+                        var nameInPartData = "Age Group";
+                    else
+                        var nameInPartData = tableColumns[cc-1];
+                    tableHtml += "<td id=\"td_" + thisId + "\">" + (participants[cp-1][nameInPartData] || "") + "</td>";
                 }
             }
             tableHtml += "</tr>";
         }
 
-        var str_html = "<h4>A) INFO</h4><label id=\"strloc\">Location: " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "</label><br/><label id=\"strtime\">Date: " + data['date'] + "</label><br/><label>Killed: " + data['num_killed'] + "</label>, <label>Injured:" + data['num_injured'] + "</label><br/>";
+        var str_html = "<h5>A) INFO</h5><label id=\"strloc\">Location: " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "</label><br/><label id=\"strtime\">Date: " + data['date'] + "</label><br/><label>Killed: " + data['num_killed'] + "</label>, <label>Injured:" + data['num_injured'] + "</label><br/>";
         $('#strtable tbody').html(tableHtml);
         $("#strinfo").html(str_html);
         $(".fixed-table-body").height($("#strtable").height())
@@ -490,6 +511,7 @@ var showTrails = function(){
 
 // Load incident - both for mention and structured annotation
 var loadIncident = function(task){
+    setOfSelected = new Set();
     var inc = $("#pickfile").val();
     if (inc!="-1"){
         $("#incid").html(inc);
