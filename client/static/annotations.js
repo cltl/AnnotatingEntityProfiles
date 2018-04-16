@@ -1,6 +1,24 @@
 
-$(function(){
+var removeListElement = function (array, elrow, elcolumn){
+    for (var i=array.length-1; i>=0; i--){
+        if (array[i][0]==elrow && array[i][1]==elcolumn) 
+            array.splice(i, 1);
+    }
+    return array;
+}
 
+var getSelectionPairs = function(array){
+    var row1 = [];
+    var row2 = [];
+    for (var i=0; i<array.length; i++){
+        if (row1.indexOf(array[i][0])==-1) row1.push(array[i][0]);
+        var prop4=array[i][1].slice(0,4);
+        if (row2.indexOf(prop4)==-1) row2.push(prop4);
+    }
+    return [row1.sort().join(','), row2.sort().join(',')];
+}
+
+$(function(){
     disqualification = [];
     refDocs = [];
     $(".ann-input-m").hide();
@@ -17,22 +35,26 @@ $(function(){
             if (acolumn!='Identifier'){ // The identifier column can't be selected
                 if ($(this).hasClass('selected')){ // remove selection
                     $(this).removeClass('selected');
-                    setOfSelected.delete(arow);
-                    if (setOfSelected.size==0){
+                    setOfSelected=removeListElement(setOfSelected, arow, acolumn);
+                    if (setOfSelected.length==0){
                         $('#selpart').html('NONE');
                         $('#selprop').html('NONE');
                     } else {
-                        $("#selpart").html(Array.from(setOfSelected).join(','));
+                        var selectionPairs = getSelectionPairs(setOfSelected);
+                        $("#selpart").html(selectionPairs[0]);
+                        $("#selprop").html(selectionPairs[1]);
                     }
                 } else { // adding a selection
-                    if ($("#selprop").text()!='NONE' && acolumn!=$("#selprop").text()){
+/*                    if ($("#selprop").text()!='NONE' && acolumn!=$("#selprop").text()){
                         $('td').removeClass('selected');
                         setOfSelected.clear();
                     }
+*/
                     $(this).addClass('selected');
-                    setOfSelected.add(arow);
-                    $('#selpart').html(Array.from(setOfSelected).join(','));
-                    $('#selprop').html(acolumn);
+                    setOfSelected.push([arow, acolumn]);
+                    var selectionPairs = getSelectionPairs(setOfSelected);
+                    $('#selpart').html(selectionPairs[0]);
+                    $('#selprop').html(selectionPairs[1]);
                 }
             }
         }
@@ -123,7 +145,7 @@ var defaultValues = function(){
         $("#selprop").html('NONE');
         $('#selpart').html('NONE');
         $('#comment').val('');
-        setOfSelected = new Set();
+        setOfSelected = [];
 }
 
 var getCardinalityAndParticipants = function(){
@@ -144,11 +166,17 @@ var getCardinalityAndParticipants = function(){
 
 var reloadInside=function(mwu=false){
     if($("span.active").length>0){
-        var allParticipants=Array.from(setOfSelected).join('');
-        var property=$('#selprop').text();
+        var selectionPairs = getSelectionPairs(setOfSelected);
+        var allParticipants = selectionPairs[0];
+        var allProperties = selectionPairs[1];
+//        $('#selpart').html(selectionPairs[0]);
+//        $('#selprop').html(selectionPairs[1]);
+
+//        var allParticipants=Array.from(setOfSelected).join('');
+//        var property=$('#selprop').text();
   
-        $("span.active").append("<sub>" + allParticipants + '</sub><sup>' + property.slice(0,4) + "</sup>");
-        var newClass = 'prop_' + property;
+        $("span.active").append("<sub>" + allParticipants + '</sub><sup>' + allProperties + "</sup>");
+        var newClass = 'prop_' + setOfSelected[0][1];
         if (!mwu){
             $("span.active").removeClass().addClass(newClass).addClass("unclickable");
         } else {
@@ -236,14 +264,14 @@ var printInfo = function(msg){
 }
 
 var saveEvidence = function(mwu){
-    var property = $("#selprop").text();
-    if (property=='NONE' || setOfSelected.size==0)
+    if (setOfSelected.length==0)
         printInfo("Please mark at least one cell in the table to pick a property and a participant");
     else {
         var allInTable=true;
         console.log(setOfSelected);
-        setOfSelected.forEach(function(participant){
-            console.log(participant);
+        setOfSelected.forEach(function(pair){
+            var participant = pair[0];
+            var property = pair[1];
             var choiceId = '#' + property + '_' + participant;
             if ($(choiceId).val()=='-1'){
                 printInfo("Annotation of mentions requires the property value to be set first in the table.");
@@ -264,7 +292,7 @@ var saveEvidence = function(mwu){
                 for (var i=0; i<allMentions.length; i++){
                     var mention=allMentions[i];
                     console.log(setOfSelected);
-                    annotations[mention]={'property': property, 'participants': Array.from(setOfSelected).sort(), 'comment': comment};
+                    annotations[mention]={'pairs': setOfSelected, 'comment': comment};
                     if (mwu){
                         annotations[mention]["mwu"] = allMentions;
                     }
@@ -286,7 +314,8 @@ var addToken = function(token, tid, annotated) {
 	} else {
             var mwuClass="";
             if (annotated[tid]["mwu"]) mwuClass="mwu";
-	    return "<span id=" + tid + " class=\"prop_" + annotated[tid]['property'] + " unclickable " + mwuClass + "\">" + token + "<sub>" + annotated[tid]['participants'].join('') + '</sub><sup>' + annotated[tid]['property'].slice(0,4) + "</sup></span> ";
+        var pairs = getSelectionPairs(annotated[tid]['pairs']);
+	    return "<span id=" + tid + " class=\"prop_" + annotated[tid]['pairs'][0][1] + " unclickable " + mwuClass + "\">" + token + "<sub>" + pairs[0] + '</sub><sup>' + pairs[1] + "</sup></span> ";
 	}
     }
     
@@ -511,7 +540,7 @@ var showTrails = function(){
 
 // Load incident - both for mention and structured annotation
 var loadIncident = function(task){
-    setOfSelected = new Set();
+    setOfSelected = [];
     var inc = $("#pickfile").val();
     if (inc!="-1"){
         $("#incid").html(inc);
