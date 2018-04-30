@@ -21,9 +21,11 @@ app.set('views', __dirname + '/client');
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use( bodyParser.json({limit: '50mb'}) );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
+    limit: '50mb',
+    extended: true,
+    parameterLimit: 50000
 })); 
 // set up our express application
 app.use(morgan('dev')); // log every request to the console

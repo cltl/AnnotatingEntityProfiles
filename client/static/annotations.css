@@ -68,36 +68,65 @@ label.inactive {
     background: #f00;
 }
 
-.prop_Name {
-    background: #0ff;
-}
 
-.prop_Status {
+/*.prop_Status {
     background: #F4A460;
 }
 
 .prop_Type {
     background: #f0f;
 }
+*/
 
-.prop_Gender {
-    background: #f99;
+.prop_Residence {
+    background: #ffe119;
 }
 
-.prop_Age {
-    background: #ffffb3;
+.prop_DeathPlace {
+    background: #46f0f0;
 }
 
-.prop_AgeGroup {
-    background: #77f;
+.prop_CauseOfDeath {
+    background: #fabebe;
 }
 
-.prop_Kinship {
-    background: #F5DEB3;
+.prop_PastConviction {
+    background: #000080;
+    color: white
 }
 
 .prop_Ethnicity {
-    background: #808000;
+    background: #e6beff;
+}
+
+.prop_EducationLevel {
+    background: #aaffc3;
+}
+
+.prop_BirthPlace {
+    background: #800000;
+    color: white
+
+}
+
+.prop_NativeLanguage {
+    background: #0082c8;
+    color: white;
+}
+
+.prop_PoliticalParty {
+    background: #008080;
+    color: white
+}
+
+.prop_Religion {
+    background: #f58231;
+    color: white
+}
+
+
+.legend {
+    font-size: xx-small;
 }
 
 .lexsupport {

@@ -10,46 +10,93 @@
 <body>
 <div class="container">
 <div class="row" id="titlerow">
-    <div class="col-sm-8">
-        <h2>Annotating Entity Profiles: Annotation</h2>
+    <div class="col-sm-6">
+        <h3>Annotating Entity Profiles: Annotation</h3>
     </div>
     <div class="col-sm-2">
-        <span>Logged user: <label><%= username %> </label></span><br/>
+        <span>Logged user: <label><%= username %> </label></span>
+    </div>
+    <div class="col-sm-2">
         <a href="/dash">Back to dashboard</a>
     </div>
     <div class="col-sm-2">
         <button class="btn btn-primary btn-ann" onclick="location.href='/logout'">Logout</button>
     </div>
 </div>
+<div class="row legend">
+    <div class="col-sm-8"><label>Legend: </label>&nbsp;
+<!--
+    <label class="prop_Name">Name</label>&nbsp;
+    <label class="prop_Gender">Gender</label>&nbsp;
+    <label class="prop_Age">Age</label>&nbsp;
+    <label class="prop_AgeGroup">AgeGroup</label>&nbsp;
+    <label class="prop_BirthDate">BirthDate</label>&nbsp;
+    <label class="prop_DeathDate">DeathDate</label>&nbsp;
+
+    <label class="prop_Kinship">Kinship</label>&nbsp;
+-->
+    <label class="prop_Residence">Residence</label>&nbsp;
+    <label class="prop_DeathPlace">DeathPlace</label>&nbsp;
+    <label class="prop_CauseOfDeath">CauseOfDeath</label>&nbsp;
+    <label class="prop_PastConviction">PastConviction</label>&nbsp;
+    <label class="prop_Ethnicity">Ethnicity</label>&nbsp;
+    <label class="prop_EducationLevel">EducationLevel</label>&nbsp;
+    <label class="prop_BirthPlace">BirthPlace</label>&nbsp;
+    <label class="prop_NativeLanguage">NativeLanguage</label>&nbsp;
+    <label class="prop_PoliticalParty">PoliticalParty</label>&nbsp;
+    <label class="prop_Religion">Religion</label>&nbsp;
+    </div><div class="col-sm-4"><label>Selection legend:</label>&nbsp;<label class="active">selected to be added</label>&nbsp;<label class="inactive">selected to be removed</label></div>
+</div>
 <br/>
 <div class="row" id="pickrow">
-    <div class="col-sm-5">
+    <div class="col-sm-6">
     <select id="pickfile">
         <option value="-1">-Please pick an incident ID-</option>
     </select>
     <button class="btn btn-primary btn-ann" onclick="loadIncident('men')">Load incident</button><br/>
     </div>
-    <div class="col-sm-7"><label id="infoMessage"></label></div>
+    <div class="col-sm-6"><label id="infoMessage"></label></div>
 </div>
-<div class="row"></div>
 <div class="row" id="annrow">
-    <div class="col-sm-1"id="strinfo"></div>
-    <div id="annotation" class="col-sm-2 ann-input-m">
-        <h5>B) MENTION ANNOTATION</h5>
-        <label>Selected Participant: </label>
-        <span id="selpart">NONE</span> <br/>
-        <label>Selected Property: </label>
-        <span id="selprop">NONE</span> <br/>
-        <label>Comment:</label>
-        <input type="text" class="form-control" id="comment">
-        <button class="btn btn-success btn-ann" onclick="saveEvidence(0)">Submit selected mentions</button>
-        <button class="btn btn-info btn-ann" onclick="saveEvidence(1)">Submit as a multiword unit</button>
-        <button class="btn btn-danger btn-rmv" onclick="removeAnnotations()">Remove selected mentions</button>
+    <div class="col-sm-4"id="strinfo"></div>
+    <div id="annotation" class="col-sm-8 ann-input-m">
+        <div class="col-sm-4">
+            <h5>B) MENTION ANNOTATION</h5>
+            <label>Selected Participant: </label>
+            <span id="selpart">NONE</span> <br/>
+            <label>Selected Property: </label>
+            <span id="selprop">NONE</span>
+        </div>
+        <div class="col-sm-8">
+            <input type="text" class="form-control" id="comment" placeholder="Enter comment here (optional)">
+            <button class="btn btn-success btn-ann" onclick="saveEvidence(0)">Submit selected mentions</button>
+            <button class="btn btn-info btn-ann" onclick="saveEvidence(1)">Submit as a multiword unit</button>
+            <button class="btn btn-danger btn-rmv" onclick="removeAnnotations()">Remove selected mentions</button>
+        </div>
     </div>
-    <div class="col-sm-9 ann-input-s">
+    <div class="col-sm-12 ann-input-s">
     <h5>C) STRUCTURED DATA ANNOTATION</h5>
-    <table id="strtable" class="table-condensed"><thead><th data-field="Identifier">ID</th><th data-field="Name">Name</th><th data-field="Status">Status</th><th data-field="Type">Type</th><th data-field="Gender">Gender</th><th data-field="Age">Age</th><th data-field="AgeGroup">AgeGroup</th><th data-field="Kinship">Kinship</th><th data-field="Ethnicity">Ethnicity</th></thead><tbody></tbody></table>
-        <label>Legend: </label>&nbsp;<label class="prop_Name">Name</label>&nbsp;<label class="prop_Status">Status</label>&nbsp;<label class="prop_Type">Type</label>&nbsp;<label class="prop_Gender">Gender</label>&nbsp;<label class="prop_Age">Age</label>&nbsp;<label class="prop_AgeGroup">AgeGroup</label>&nbsp;<label class="prop_Kinship">Kinship</label>&nbsp;<label class="prop_Ethnicity">Ethnicity</label>&nbsp;<br/><label>Selection legend:</label>&nbsp;<label class="active">selected to be added</label>&nbsp;<label class="inactive">selected to be removed</label>
+    <table id="strtable" class="table-condensed">
+        <thead>
+            <th data-field="ID">ID</th>
+            <th data-field="Name">Name</th>
+            <th data-field="Status">Status</th>
+            <th data-field="Type">Type</th>
+            <th data-field="Gender">Gender</th>
+            <th data-field="Age">Age</th>
+            <th data-field="Residence">Residence</th>
+            <th data-field="DeathPlace">DeathPlace</th>
+            <th data-field="CauseOfDeath">CauseOfDeath</th>
+            <th data-field="PastConviction">PastConviction</th>
+            <th data-field="Ethnicity">Ethnicity</th>
+            <th data-field="EducationLevel">EducationLevel</th>
+            <th data-field="BirthPlace">BirthPlace</th>
+            <th data-field="NativeLanguage">NativeLanguage</th>
+            <th data-field="PoliticalParty">PoliticalParty</th>
+            <th data-field="Religion">Religion</th>
+        </thead>
+        <tbody></tbody>
+    </table>
     </div>
 </div>
 <div class="row" id="bigdiv">

@@ -12,10 +12,19 @@ var getSelectionPairs = function(array){
     var row2 = [];
     for (var i=0; i<array.length; i++){
         if (row1.indexOf(array[i][0])==-1) row1.push(array[i][0]);
-        var prop4=array[i][1].slice(0,4);
+        var prop4=array[i][1].slice(0,3);
         if (row2.indexOf(prop4)==-1) row2.push(prop4);
     }
     return [row1.sort().join(','), row2.sort().join(',')];
+}
+
+var getTableColumns = function(){
+    var thArray = [];
+
+    $('#strtable > thead > tr > th').each(function(){
+            thArray.push($(this).text())
+    });
+    tableColumns = thArray;
 }
 
 $(function(){
@@ -27,12 +36,13 @@ $(function(){
         "searching": false,
         "paging": false
     });
+    getTableColumns();
     $('#strtable tbody').on( 'click', 'td', function (e) {
         if (e.target == e.currentTarget){
             var prop_and_part = this.id.slice(3).split('_');
             var acolumn = prop_and_part[0];
             var arow = prop_and_part[1];
-            if (acolumn!='Identifier'){ // The identifier column can't be selected
+            if (notAnnotatable.indexOf(acolumn)==-1){ // The identifier column can't be selected
                 if ($(this).hasClass('selected')){ // remove selection
                     $(this).removeClass('selected');
                     setOfSelected=removeListElement(setOfSelected, arow, acolumn);
@@ -379,11 +389,16 @@ var loadTextsFromFile = function(fn){
     });
 }
 
-var tableColumns = ["Identifier", "Name", "Status", "Type", "Gender", "Age", "AgeGroup", "Kinship", "Ethnicity"];
-var propertyOptions = {
+var notAnnotatable = ['ID', 'Type', 'Status', 'Name', 'Gender', 'Age'];
+var tableColumns = [];
+var propertyOptions = {'Residence': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'PoliticalParty': ['Democratic Party', 'Republican Party', 'other'], 'EducationLevel': ['Less than high school', 'High school graduate', 'Higher degree', 'other'], 'DeathPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'Religion': ['Christian', 'Islam', 'Judaism', 'Buddhism/Hinduism', 'Atheist/Agnostic', 'other'], 'CauseOfDeath': ['Intentional', 'Accidental', 'Suicide', 'other'], 'NativeLanguage': ['English', 'Spanish', 'Chinese', 'other'], 'BirthPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'Ethnicity': ['African American', 'White/Caucascian', 'Asian', 'Native American', 'Hispanic/Latin', 'other'], 'PastConviction': ['Yes', 'No']};
+
+
+
+                    /*{
                         "Kinship": ["father", "mother", "child", "grandmother", "grandfather"],
                         "Ethnicity": ["Asian", "Black", "Native American", "White"]
-                    }
+                    }*/
 var tableAnnotations = {};
 
 var saveTableAnnotation = function(selectObject){
@@ -399,7 +414,7 @@ var getStructuredData = function(inc, cback) {
         var participants = data['participants'];
         var tableHtml = "";
         for (var cp=1; cp<=participants.length; cp++){
-            participants[cp-1]['Identifier']=cp;
+            participants[cp-1]['ID']=cp;
             tableHtml += "<tr data-index=" + cp.toString() + ">";
             for (var cc=1; cc<=tableColumns.length; cc+=1){
                 var thisProperty = tableColumns[cc-1];
@@ -412,17 +427,20 @@ var getStructuredData = function(inc, cback) {
                     }
                     tableHtml += "</select></td>";
                 } else{
-                    if (tableColumns[cc-1]=="AgeGroup")
-                        var nameInPartData = "Age Group";
-                    else
-                        var nameInPartData = tableColumns[cc-1];
+                    /*if (tableColumns[cc-1]=="AgeGroup") {
+                        var agValue = classifyAge(participants[cp-1][tableColumns[cc-2]]);
+                        tableHtml += "<td id=\"td_" + thisId + "\">" + agValue + "</td>";
+                        //var nameInPartData = "Age Group";
+                    } else { */
+                    var nameInPartData = tableColumns[cc-1];
                     tableHtml += "<td id=\"td_" + thisId + "\">" + (participants[cp-1][nameInPartData] || "") + "</td>";
+                    //}
                 }
             }
             tableHtml += "</tr>";
         }
 
-        var str_html = "<h5>A) INFO</h5><label id=\"strloc\">Location: " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "</label><br/><label id=\"strtime\">Date: " + data['date'] + "</label><br/><label>Killed: " + data['num_killed'] + "</label>, <label>Injured:" + data['num_injured'] + "</label><br/>";
+        var str_html = "<h5>A) INFO</h5><label id=\"strloc\">Location:</label> " + data['address'] + ", " + data['city_or_county'] + ", " + data['state'] + "<br/><label id=\"strtime\">Date:</label> " + data['date'] + ", <label>Killed:</label> " + data['num_killed'] + ", <label>Injured:</label> " + data['num_injured'];
         $('#strtable tbody').html(tableHtml);
         $("#strinfo").html(str_html);
         $(".fixed-table-body").height($("#strtable").height())
@@ -538,6 +556,16 @@ var showTrails = function(){
     $("#trails").empty().html(items.join("<br/>"));
 }
 
+var classifyAge = function(age) {
+
+    console.log(age);
+    age=parseInt(age);
+    if (age<12) return "Child 0-11";
+    else if (age<18) return "Teen 12-17";
+    else if (age<65) return "Adult 18-64";
+    else return "Senior 65+";
+}
+
 // Load incident - both for mention and structured annotation
 var loadIncident = function(task){
     setOfSelected = [];
@@ -555,6 +583,7 @@ var loadIncident = function(task){
                     console.log("Loaded previous structured annotations!");
                     tableAnnotations=data;
                     Object.keys(tableAnnotations).forEach(function(key) {
+                        var property = tableAnnotations[key].split('_')[1];
                         $('#' + key).val(tableAnnotations[key]);
                     })
                 }
