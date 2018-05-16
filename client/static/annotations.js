@@ -76,7 +76,6 @@ $(function(){
         });
 
 
-
     $(document).on("click", "span.clickable", function() {  //use a class, since your ID gets mangled
         $('span').removeClass("inactive");
         $(this).toggleClass("active");      //add the class to the clicked element
@@ -85,6 +84,10 @@ $(function(){
         $('span').removeClass("active");
         $(this).toggleClass("inactive");      //add the class to the clicked element
     });
+    $("#pnlLeft").on('click', function(){
+        if ($("#infoMessage").text()!="")
+            $("#infoMessage").text("");
+    });
     $("#pnlRight").hide();
     var task='men';
     $.get('/listincidents', {'task': task}, function(unsorted, status) {
@@ -92,15 +95,27 @@ $(function(){
         var new_inc = unsorted['new'];
         var old_sorted = old_inc.sort();
         var new_sorted = new_inc.sort();
-        var trial_incidents = ['761837', '759131', '739413', '773797']
+        var trial_incidents = ['761837', '759131', '739413', '773797'];
+        var train1 = ["106394", "108112", "111416", "113480", "138295", "146565", "168844", "170442", "178149", "190615", "207298", "207542", "209733", "223936", "226600"];
+        var train2 = ["269677", "272869", "273773", "281766", "282561", "282956", "295502", "302749", "306048", "312892", "314763", "314973", "315594", "321156", "338580"];
         $('#pickfile').append($('<option></option>').val('-1').html("--INCIDENTS YOU'VE WORKED ON--").prop('disabled', true));
         for(var i = 0; i < old_sorted.length; i++) {
             if (trial_incidents.indexOf(old_sorted[i])>-1) continue;
             $('#pickfile').append($('<option></option>').val(old_sorted[i]).html(old_sorted[i]));
         }
+        $('#pickfile').append($('<option></option>').val('-1').html("--TRAINING #1--").prop('disabled', true));
+        for(var i = 0; i < train1.length; i++) {
+            if (old_sorted.indexOf(train1[i])>-1) continue;
+            $('#pickfile').append($('<option></option>').val(train1[i]).html(train1[i]));
+        }
+        $('#pickfile').append($('<option></option>').val('-1').html("--TRAINING #2--").prop('disabled', true));
+        for(var i = 0; i < train2.length; i++) {
+            if (old_sorted.indexOf(train2[i])>-1) continue;
+            $('#pickfile').append($('<option></option>').val(train2[i]).html(train2[i]));
+        }
         $('#pickfile').append($('<option></option>').val('-1').html("--OTHER INCIDENTS--").prop('disabled', true));
         for(var i = 0; i < new_sorted.length; i++) {
-            if (trial_incidents.indexOf(new_sorted[i])>-1) continue;
+            if (trial_incidents.indexOf(new_sorted[i])>-1 || train1.indexOf(new_sorted[i])>-1 || train2.indexOf(new_sorted[i])>-1) continue;
             $('#pickfile').append($('<option></option>').val(new_sorted[i]).html(new_sorted[i]));
         }
         $('#pickfile').append($('<option></option>').val('-1').html("--TRIAL DATA INCIDENTS--").prop('disabled', true));
@@ -204,7 +219,7 @@ var storeAndReload = function(annotations, mwu = false){
     $.post("/storeannotations", {'annotations': annotations, 'task': 'men', 'incident': $("#pickfile").val()})
 //, function() {
     .done(function() {
-        alert( "Annotation saved. Now re-loading." );
+        printSuccess( "Mention annotation was successful" );
         reloadInside(mwu);
         defaultValues();
         //showTrails();
@@ -271,6 +286,13 @@ var printInfo = function(msg){
         $("#infoMessage").html(msg);
         $("#infoMessage").removeClass("good_info");
         $("#infoMessage").addClass("bad_info");
+}
+
+var printSuccess = function(msg){
+        $("#infoMessage").html(msg);
+        $("#infoMessage").addClass("good_info");
+        $("#infoMessage").removeClass("bad_info");
+   
 }
 
 var saveEvidence = function(mwu){
@@ -391,8 +413,7 @@ var loadTextsFromFile = function(fn){
 
 var notAnnotatable = ['ID', 'Type', 'Status', 'Name', 'Gender', 'Age'];
 var tableColumns = [];
-var propertyOptions = {'Residence': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'PoliticalParty': ['Democratic Party', 'Republican Party', 'other'], 'EducationLevel': ['Less than high school', 'High school graduate', 'Higher degree', 'other'], 'DeathPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'Religion': ['Christian', 'Islam', 'Judaism', 'Buddhism/Hinduism', 'Atheist/Agnostic', 'other'], 'CauseOfDeath': ['Intentional', 'Accidental', 'Suicide', 'other'], 'NativeLanguage': ['English', 'Spanish', 'Chinese', 'other'], 'BirthPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'Ethnicity': ['African American', 'White/Caucascian', 'Asian', 'Native American', 'Hispanic/Latin', 'other'], 'PastConviction': ['Yes', 'No']};
-
+var propertyOptions = {'DeathPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'EducationLevel': ['Less than high school', 'High school graduate', 'Higher degree', 'other'], 'NativeLanguage': ['English', 'Spanish', 'Chinese', 'other'], 'Ethnicity': ['African American', 'White/Caucascian', 'Asian', 'Native American', 'Hispanic/Latin', 'other'], 'PastConviction': ['Yes', 'No'], 'Residence': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'CauseOfDeath': ['Intentional', 'Accidental', 'Suicide', 'other'], 'PoliticalParty': ['Democratic Party', 'Republican Party', 'other'], 'BirthPlace': ['Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Liberty Island', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'United States Virgin Islands', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'other'], 'Religion': ['Christian', 'Islam', 'Judaism', 'Buddhism/Hinduism', 'Atheist/Agnostic', 'other'], 'MedicalCondition': ['Mental', 'Organic', 'other']};
 
 
                     /*{
@@ -604,7 +625,7 @@ var getAnnotatedDate=function(){
 
 var saveStructuredAnnotation = function(){
     $.post("/storeannotations", {'annotations': tableAnnotations, 'task': 'str', 'incident': $("#pickfile").val()}, function(data, status){
-        alert("Annotation saved!");
+        printSuccess("Annotation of property value saved!");
     });
 }
 

@@ -109,6 +109,10 @@ label.inactive {
 
 }
 
+.prop_MedicalCondition {
+    background: #a0a0a0;
+}
+
 .prop_NativeLanguage {
     background: #0082c8;
     color: white;
