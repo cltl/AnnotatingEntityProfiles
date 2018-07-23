@@ -22,6 +22,11 @@ var downloadStructuredDisq = function(u){
     downloadAnnotations(u, 'str', 'dis');
 }
 
+var downloadMentionDisq = function(u){
+    downloadAnnotations(u, 'men', 'dis');
+}
+
+
 var downloadStructuredAnnotations = function(u){
     downloadAnnotations(u, 'str', 'ann');
 }

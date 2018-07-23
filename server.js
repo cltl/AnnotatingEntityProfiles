@@ -139,14 +139,18 @@ var isAdmin = function (u){
 
 
 
-/*
+
 
 app.get('/exportannotations', isAuthenticated, function(req, res){
     if (req.query['annotator'] && req.query['task'] && req.query['ann'] && isAdmin(req.user.user)){
         var annotator = req.query['annotator'];
         var task = req.query['task'];
         var ann = req.query['ann'];
-        var ann_pattern = task + ":" + annotator + ":" + ann + ":";
+//'prof:' + task + ':' + user + ':' + req.body.incident;
+        if (ann=='ann') // ANNOTATION
+            var ann_pattern = 'prof:' + task + ":" + annotator + ":";
+        else // DISQUALIFICATIONS
+            var ann_pattern = task + ':' + annotator + ':' + ann;
         client.keys(ann_pattern + '*', function(err, ann_incs){
             var annJson = {};
             var cnt = 0;
@@ -169,7 +173,7 @@ app.get('/exportannotations', isAuthenticated, function(req, res){
     } else res.sendStatus(400);
 });
 
-*/
+
 app.get('/getstrdata', isAuthenticated, function(req, res){
     var inc = req.query['inc'];
     client.get('incstr:' + inc, function(err, result){

@@ -95,6 +95,7 @@ $(function(){
         var new_inc = unsorted['new'];
         var old_sorted = old_inc.sort();
         var new_sorted = new_inc.sort();
+        var last_batch = ['97407', '113214', '113247', '122136', '156813', '172205', '296327', '317165', '384047', '389279', '409732', '448419', '479709', '479734', '481229', '489061', '491674', '494072', '502850', '510769', '533821', '546550', '556438', '558601', '572696', '588835', '588918', '595069', '596902', '617512', '624046', '625735', '635289', '699605', '714840', '722219', '727759', '735589', '741314', '744044', '750833', '751367', '753058', '754893', '755757', '767876', '804071', '804189', '808303', '809499'];
         var trial_incidents = ['761837', '759131', '739413', '773797'];
         var train1 = ["106394", "108112", "111416", "113480", "138295", "146565", "168844", "170442", "178149", "190615", "207298", "207542", "209733", "223936", "226600"];
         var train2 = ["269677", "272869", "273773", "281766", "282561", "282956", "295502", "302749", "306048", "312892", "314763", "314973", "315594", "321156", "338580"];
@@ -115,8 +116,13 @@ $(function(){
         }
         $('#pickfile').append($('<option></option>').val('-1').html("--OTHER INCIDENTS--").prop('disabled', true));
         for(var i = 0; i < new_sorted.length; i++) {
-            if (trial_incidents.indexOf(new_sorted[i])>-1 || train1.indexOf(new_sorted[i])>-1 || train2.indexOf(new_sorted[i])>-1) continue;
+            if (trial_incidents.indexOf(new_sorted[i])>-1 || train1.indexOf(new_sorted[i])>-1 || train2.indexOf(new_sorted[i])>-1 || last_batch.indexOf(new_sorted[i])>-1) continue;
             $('#pickfile').append($('<option></option>').val(new_sorted[i]).html(new_sorted[i]));
+        }
+        $('#pickfile').append($('<option></option>').val('-1').html("--LAST BATCH--").prop('disabled', true));
+        for(var i = 0; i < last_batch.length; i++) {
+            if (trial_incidents.indexOf(last_batch[i])>-1 || train1.indexOf(last_batch[i])>-1 || train2.indexOf(last_batch[i])>-1) continue;
+            $('#pickfile').append($('<option></option>').val(last_batch[i]).html(last_batch[i]));
         }
         $('#pickfile').append($('<option></option>').val('-1').html("--TRIAL DATA INCIDENTS--").prop('disabled', true));
         for(var i = 0; i < trial_incidents.length; i++) {
@@ -390,7 +396,7 @@ var loadTextsFromFile = function(fn){
             else var disq = true;
             if (disq) var header = "<div class=\"panel panel-default disqualified\" id=\"" + k + "\">";
             else var header = "<div class=\"panel panel-default\" id=\"" + k + "\">";
-            header += "<div class=\"panel-heading\"><h5 class=\"panel-title\">" + title + "&nbsp;(<i>Published on: <span id=" + k + "dct>" + data[k]['DCT'] + "</span></i>) "; 
+            header += "<div class=\"panel-heading\"><h5 class=\"panel-title\">" + title + "&nbsp;(<i>Published on: <span id=" + k + "dct>" + data[k]['DCT'] + "</span></i>) (" + k + ")"; 
             if (!disq) header += "<button class=\"btn btn-primary\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(\'" + k + "\', \'" + task + "\')\">Mark non-relevant</button>";
             else header += "<button class=\"btn btn-primary\" id=\"btn" + k + "\" onclick=\"toggleDisqualify(\'" + k + "\', \'" + task + "\')\">Mark relevant</button>";
 
@@ -431,7 +437,8 @@ var saveTableAnnotation = function(selectObject){
 
 var getStructuredData = function(inc, cback) {
     $.get('/getstrdata', {'inc': inc}, function(data, status) {
-        data=JSON.parse(data);
+        if (typeof(data)=='string')
+            data=JSON.parse(data);
         var participants = data['participants'];
         var tableHtml = "";
         for (var cp=1; cp<=participants.length; cp++){
