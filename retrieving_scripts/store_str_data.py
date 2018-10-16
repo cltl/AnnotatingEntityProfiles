@@ -7,8 +7,13 @@ pattern='incstr:*'
 
 data={}
 for key in r.scan_iter(pattern):
-    str_data = r.get(key.decode()).decode('utf-8')
-    str_data_json = json.loads(json.loads(str_data))
+    #str_data = r.get(key.decode()).decode('utf-8')
+    str_data=r.get(key.decode()).decode('utf-8')
+    a_json = json.loads(str_data)
+    if not isinstance(a_json, dict):
+        str_data_json = json.loads(a_json)
+    else:
+        str_data_json = a_json
     participants=str_data_json['participants']
     place_of_death = str_data_json['state']
     date_of_death = str_data_json['date'][-4:]
@@ -20,5 +25,5 @@ for key in r.scan_iter(pattern):
 
 print(data)
 
-with open('str_data.json', 'w') as j:
+with open('../str_data.json', 'w') as j:
     json.dump(data, j)

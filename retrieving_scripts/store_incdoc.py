@@ -15,5 +15,5 @@ for key in r.scan_iter(pattern):
 
 print(data)
 
-with open('docs_data.json', 'w') as j:
+with open('../docs_data.json', 'w') as j:
     json.dump(data, j)
