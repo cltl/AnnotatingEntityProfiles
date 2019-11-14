@@ -4,5 +4,5 @@ server_logs/
 client/logs
 client/img
 test_data*/
-*.json
+*_data.json
 
